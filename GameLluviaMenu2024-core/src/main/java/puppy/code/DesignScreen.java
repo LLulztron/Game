@@ -14,7 +14,9 @@ public class DesignScreen implements Screen {
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Texture designTexture;
+    private Texture frameTexture;
     private Sprite designSprite;
+    private Sprite frameSprite;
 
     public DesignScreen(final GameLluviaMenu game) {
         this.game = game;
@@ -22,10 +24,26 @@ public class DesignScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
 
-        // Cargar una textura de ejemplo para mostrar un diseño
-        designTexture = new Texture(Gdx.files.internal("design_example.jpg"));
+        // Cargar la textura del marco
+        frameTexture = new Texture(Gdx.files.internal("frame_example.png"));
+        frameSprite = new Sprite(frameTexture);
+        frameSprite.setPosition(0, 480 - frameSprite.getHeight());
+
+        // Cargar la textura del diseño
+        designTexture = new Texture(Gdx.files.internal("design_example.png"));
         designSprite = new Sprite(designTexture);
-        designSprite.setPosition(100, 100);
+
+        // Hacer que el diseño sea un 90% del tamaño del marco
+        float scale = 0.9f;
+        float designWidth = frameSprite.getWidth() * scale;
+        float designHeight = frameSprite.getHeight() * scale;
+
+        designSprite.setSize(designWidth, designHeight);
+
+        // Centrar el diseño dentro del marco
+        float designX = frameSprite.getX() + (frameSprite.getWidth() - designWidth) / 2;
+        float designY = frameSprite.getY() + (frameSprite.getHeight() - designHeight) / 2;
+        designSprite.setPosition(designX, designY);
     }
 
     @Override
@@ -39,13 +57,20 @@ public class DesignScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        designSprite.draw(batch); // Dibuja el diseño
+        frameSprite.draw(batch);  // Dibuja el marco detrás del diseño
+        designSprite.draw(batch); // Dibuja el diseño ajustado sobre el marco
         batch.end();
 
-        // Aquí podrías detectar un clic para regresar al menú principal
+        // Detectar si el toque ocurre dentro de los límites del sprite
         if (Gdx.input.isTouched()) {
-            game.setScreen(new MainMenuScreen(game));
-            dispose();
+            float touchX = Gdx.input.getX();
+            float touchY = Gdx.graphics.getHeight() - Gdx.input.getY(); // Ajuste para el eje Y
+
+            // Verificar si el toque está dentro de los límites de designSprite
+            if (designSprite.getBoundingRectangle().contains(touchX, touchY)) {
+                game.setScreen(new MainMenuScreen(game));
+                dispose();
+            }
         }
     }
 
@@ -55,6 +80,7 @@ public class DesignScreen implements Screen {
     @Override
     public void dispose() {
         designTexture.dispose();
+        frameTexture.dispose();
     }
 
     @Override

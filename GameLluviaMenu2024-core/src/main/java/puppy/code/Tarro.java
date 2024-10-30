@@ -71,23 +71,11 @@ public class Tarro {
 	   
 	   
 	   public void actualizarMovimiento() { 
-		   // movimiento desde mouse/touch
-		   /*if(Gdx.input.isTouched()) {
-			      Vector3 touchPos = new Vector3();
-			      touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			      camera.unproject(touchPos);
-			      bucket.x = touchPos.x - 64 / 2;
-			}*/
 		   //movimiento desde teclado
-		   if(Gdx.input.isKeyPressed(Input.Keys.A) ) bucket.x -= velx * Gdx.graphics.getDeltaTime();//Para usar las flechitas, reemplazar A por LEFT
-		   if(Gdx.input.isKeyPressed(Input.Keys.D)) bucket.x += velx * Gdx.graphics.getDeltaTime();//lo mismo pero D por RIGHT 	
-		  
-		   /* PARA INTERACTUAR CON UNA O LA OTRA FORMA, ES DECIR A D O LAS FLECHITAS.
 		   if((Gdx.input.isKeyPressed(Input.Keys.A)) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) bucket.x -= velx * Gdx.graphics.getDeltaTime();//Para usar las flechitas, reemplazar A por LEFT
 		   if((Gdx.input.isKeyPressed(Input.Keys.D)) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.x += velx * Gdx.graphics.getDeltaTime();//lo mismo pero D por RIGHT 	
-		   */
 		   
-		   // que no se salga de los bordes izq y der
+		   // que no se salga de los bordes izquierda y derecha
 		   if(bucket.x < 0) bucket.x = 0;	
 		   if(bucket.x > 800 - 64) bucket.x = 800 - 64;
 	   }

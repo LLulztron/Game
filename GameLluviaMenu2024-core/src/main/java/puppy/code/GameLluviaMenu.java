@@ -1,6 +1,7 @@
 package puppy.code;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -40,6 +41,4 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 		public void setHigherScore(int higherScore) {
 			this.higherScore = higherScore;
 		}
-		
-
 	}

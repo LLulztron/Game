@@ -34,6 +34,12 @@ public class PausaScreen implements Screen {
     }
 
     @Override
+    public void show() {
+        // Detener el sonido al mostrar la pantalla de pausa
+        juego.stopRainSound(); // Llama al método que detiene el sonido
+    }
+
+    @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 1.0f, 0.5f);
 
@@ -58,13 +64,11 @@ public class PausaScreen implements Screen {
             } else {
                 game.setScreen(juego); // Regresa al juego
                 juego.setPaused(false); // Asegúrate de que el juego no esté en pausa
+                juego.resumeRainSound(); // Reinicia el sonido
                 dispose(); // Libera recursos de la pantalla de pausa
             }
         }
     }
-
-    @Override
-    public void show() { }
 
     @Override
     public void resize(int width, int height) { }

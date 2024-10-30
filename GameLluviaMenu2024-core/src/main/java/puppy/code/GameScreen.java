@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.math.Vector3;
 
 public class GameScreen implements Screen {
     final GameLluviaMenu game;
@@ -22,6 +21,7 @@ public class GameScreen implements Screen {
 
     private Texture backgroundImage; // Fondo de juego
     private boolean isPaused; // Estado de pausa
+    private Music rainMusic; // Variable para el sonido de lluvia
 
     public GameScreen(final GameLluviaMenu game) {
         this.game = game;
@@ -37,7 +37,7 @@ public class GameScreen implements Screen {
         Texture gotaMala = new Texture(Gdx.files.internal("dropBad.png"));
         Texture gotaBuff = new Texture(Gdx.files.internal("healthDrp.png"));
         Sound dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
-        Music rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
+        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3")); // Cambia a una variable de clase
         lluvia = new Lluvia(gota, gotaMala, gotaBuff, dropSound, rainMusic);
         
         // Camera setup
@@ -73,6 +73,7 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) { // Cambiar a otra tecla si es necesario
             isPaused = !isPaused; // Cambia el estado de pausa
             if (isPaused) {
+                setPaused(true); // Llama al método setPaused
                 game.setScreen(new PausaScreen(game, this));
             }
         }
@@ -104,7 +105,7 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         // Continuar con el sonido de lluvia
-        lluvia.continuar();
+        continuarRainSound(); // Asegúrate de llamar al método para iniciar el sonido
     }
 
     @Override
@@ -112,7 +113,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
-        lluvia.pausar();
+        pausarRainSound(); // Pausa el sonido de lluvia al pausar
         game.setScreen(new PausaScreen(game, this)); 
     }
 
@@ -124,9 +125,35 @@ public class GameScreen implements Screen {
         tarro.destruir();
         lluvia.destruir();
         backgroundImage.dispose(); // Liberar la textura del fondo
+        rainMusic.dispose(); // Liberar el sonido de lluvia
     }
 
     public void setPaused(boolean paused) {
         isPaused = paused;
+    }
+
+    public void pausarRainSound() {
+        if (rainMusic.isPlaying()) {
+            rainMusic.pause(); // Pausar el sonido de lluvia
+        }
+    }
+
+    public void continuarRainSound() {
+        if (!rainMusic.isPlaying()) {
+            rainMusic.setLooping(true); // Hacer que el sonido se repita
+            rainMusic.play(); // Reanudar el sonido de lluvia
+        }
+    }
+
+    public void stopRainSound() {
+        if (rainMusic.isPlaying()) {
+            rainMusic.stop(); // Detener el sonido de lluvia
+        }
+    }
+
+    public void resumeRainSound() {
+        if (!rainMusic.isPlaying()) {
+            rainMusic.play(); // Reanudar el sonido de lluvia
+        }
     }
 }

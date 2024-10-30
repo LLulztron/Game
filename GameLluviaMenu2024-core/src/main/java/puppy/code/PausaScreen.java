@@ -3,9 +3,11 @@ package puppy.code;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public class PausaScreen implements Screen {
 
@@ -14,6 +16,8 @@ public class PausaScreen implements Screen {
     private SpriteBatch batch;	   
     private BitmapFont font;
     private OrthographicCamera camera;
+    private Texture buttonTexture; // Textura del botón
+    private Sprite buttonSprite; // Sprite del botón
 
     public PausaScreen(final GameLluviaMenu game, GameScreen juego) {
         this.game = game;
@@ -22,6 +26,11 @@ public class PausaScreen implements Screen {
         this.font = game.getFont();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
+
+        // Cargar la textura y crear el sprite del botón
+        buttonTexture = new Texture(Gdx.files.internal("button_back.png")); // Asegúrate de tener esta textura
+        buttonSprite = new Sprite(buttonTexture);
+        buttonSprite.setPosition(25, 100); // Posición del botón
     }
 
     @Override
@@ -34,12 +43,23 @@ public class PausaScreen implements Screen {
         batch.begin();
         font.draw(batch, "Juego en Pausa ", 100, 150);
         font.draw(batch, "Toca en cualquier lado para continuar !!!", 100, 100);
+        buttonSprite.draw(batch); // Dibuja el botón
         batch.end();
 
+        // Detectar toque para continuar el juego
         if (Gdx.input.isTouched()) {
-            game.setScreen(juego); // Regresa al juego
-            juego.setPaused(false); // Asegúrate de que el juego no esté en pausa
-            dispose(); // Libera recursos de la pantalla de pausa
+            // Verificar si el toque está dentro de los límites del botón
+            float touchX = Gdx.input.getX();
+            float touchY = Gdx.graphics.getHeight() - Gdx.input.getY(); // Ajuste para el eje Y
+
+            if (buttonSprite.getBoundingRectangle().contains(touchX, touchY)) {
+                game.setScreen(new MainMenuScreen(game)); // Volver al menú principal
+                dispose(); // Libera recursos de la pantalla de pausa
+            } else {
+                game.setScreen(juego); // Regresa al juego
+                juego.setPaused(false); // Asegúrate de que el juego no esté en pausa
+                dispose(); // Libera recursos de la pantalla de pausa
+            }
         }
     }
 
@@ -59,5 +79,7 @@ public class PausaScreen implements Screen {
     public void hide() { }
 
     @Override
-    public void dispose() { }
+    public void dispose() {
+        buttonTexture.dispose(); // Libera la textura del botón
+    }
 }

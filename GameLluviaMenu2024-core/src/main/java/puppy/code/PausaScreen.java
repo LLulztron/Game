@@ -42,33 +42,31 @@ public class PausaScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 1.0f, 0.5f);
-
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        font.draw(batch, "Juego en Pausa ", 100, 150);
+        font.draw(batch, "Juego en Pausa", 100, 150);
         font.draw(batch, "Toca en cualquier lado para continuar !!!", 100, 100);
-        buttonSprite.draw(batch); // Dibuja el botón
+        buttonSprite.draw(batch);  // Dibuja el botón de regreso
         batch.end();
 
-        // Detectar toque para continuar el juego
         if (Gdx.input.isTouched()) {
-            // Verificar si el toque está dentro de los límites del botón
             float touchX = Gdx.input.getX();
-            float touchY = Gdx.graphics.getHeight() - Gdx.input.getY(); // Ajuste para el eje Y
+            float touchY = Gdx.graphics.getHeight() - Gdx.input.getY();
 
             if (buttonSprite.getBoundingRectangle().contains(touchX, touchY)) {
-                game.setScreen(new MainMenuScreen(game)); // Volver al menú principal
-                dispose(); // Libera recursos de la pantalla de pausa
+                game.setScreen(new MainMenuScreen(game));  // Opción de regresar al menú principal
+                dispose();  // Libera recursos de la pantalla de pausa
             } else {
-                game.setScreen(juego); // Regresa al juego
-                juego.setPaused(false); // Asegúrate de que el juego no esté en pausa
-                juego.resumeRainSound(); // Reinicia el sonido
-                dispose(); // Libera recursos de la pantalla de pausa
+                game.setScreen(juego);  // Vuelve al juego
+                juego.setPaused(false); // Asegura que el juego no esté en pausa
+                juego.resume();         // Llama a resume() explícitamente para reanudar la música
+                dispose();  // Libera recursos de la pantalla de pausa
             }
         }
     }
+
 
     @Override
     public void resize(int width, int height) { }

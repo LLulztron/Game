@@ -26,12 +26,12 @@ public class PausaScreen implements Screen {
         this.batch = game.getBatch();
         this.font = game.getFont();
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
+        camera.setToOrtho(false, 600, 480);
 
         // Cargar la textura y crear el sprite del botón
         buttonTexture = new Texture(Gdx.files.internal("mainMenu.png")); // Asegúrate de tener esta textura
         buttonSprite = new Sprite(buttonTexture);
-        buttonSprite.setPosition(25, 100); // Posición del botón
+        buttonSprite.setPosition(500, 50); // Posición del botón
 
         // Cargar la textura del fondo
         backgroundTexture = new Texture(Gdx.files.internal("BackgroundPausa.jpg")); // Asegúrate de que este archivo esté en la carpeta assets

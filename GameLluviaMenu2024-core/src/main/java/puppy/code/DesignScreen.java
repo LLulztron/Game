@@ -30,8 +30,11 @@ public class DesignScreen implements Screen {
         backgroundTexture = new Texture(Gdx.files.internal("FondoTemas.jpg"));
         
         // Inicializar los sprites de diseño y marco
-        Texture frameTexture = new Texture(Gdx.files.internal("frame.png"));
+        Texture frameTexture = new Texture(Gdx.files.internal("frameDesing.png"));
         Texture designTexture = new Texture(Gdx.files.internal("design.png"));
+        
+        System.out.println(Gdx.files.internal("design.png").exists());
+        
         frameSprite = new Sprite(frameTexture);
         designSprite = new Sprite(designTexture);
         
@@ -59,7 +62,7 @@ public class DesignScreen implements Screen {
         backButtonSprite.setPosition(Gdx.graphics.getWidth() - backButtonSprite.getWidth() - 10, 10);
 
         // Cargar la música de fondo
-        designScreenSong = Gdx.audio.newMusic(Gdx.files.internal("songDesing.mp3"));
+        designScreenSong = Gdx.audio.newMusic(Gdx.files.internal("DesingScreenSong.mp3"));
         designScreenSong.setLooping(true);  // Configura la música en bucle
     }
 

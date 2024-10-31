@@ -1,7 +1,6 @@
 package puppy.code;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

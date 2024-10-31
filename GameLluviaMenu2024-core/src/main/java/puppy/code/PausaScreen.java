@@ -16,8 +16,9 @@ public class PausaScreen implements Screen {
     private SpriteBatch batch;	   
     private BitmapFont font;
     private OrthographicCamera camera;
-    private Texture buttonTexture; // Textura del botón
-    private Sprite buttonSprite; // Sprite del botón
+    private Texture buttonTexture;     // Textura del botón
+    private Sprite buttonSprite;       // Sprite del botón
+    private Texture backgroundTexture; // Textura del fondo de pausa
 
     public PausaScreen(final GameLluviaMenu game, GameScreen juego) {
         this.game = game;
@@ -28,9 +29,12 @@ public class PausaScreen implements Screen {
         camera.setToOrtho(false, 800, 480);
 
         // Cargar la textura y crear el sprite del botón
-        buttonTexture = new Texture(Gdx.files.internal("button_back.png")); // Asegúrate de tener esta textura
+        buttonTexture = new Texture(Gdx.files.internal("mainMenu.png")); // Asegúrate de tener esta textura
         buttonSprite = new Sprite(buttonTexture);
         buttonSprite.setPosition(25, 100); // Posición del botón
+
+        // Cargar la textura del fondo
+        backgroundTexture = new Texture(Gdx.files.internal("BackgroundPausa.jpg")); // Asegúrate de que este archivo esté en la carpeta assets
     }
 
     @Override
@@ -46,6 +50,9 @@ public class PausaScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
+        // Dibujar el fondo de pausa
+        batch.draw(backgroundTexture, 0, 0, 800, 480);
+        // Dibujar el texto de pausa y el botón
         font.draw(batch, "Juego en Pausa", 100, 150);
         font.draw(batch, "Toca en cualquier lado para continuar !!!", 100, 100);
         buttonSprite.draw(batch);  // Dibuja el botón de regreso
@@ -67,7 +74,6 @@ public class PausaScreen implements Screen {
         }
     }
 
-
     @Override
     public void resize(int width, int height) { }
 
@@ -82,6 +88,7 @@ public class PausaScreen implements Screen {
 
     @Override
     public void dispose() {
-        buttonTexture.dispose(); // Libera la textura del botón
+        buttonTexture.dispose();       // Libera la textura del botón
+        backgroundTexture.dispose();   // Libera la textura del fondo
     }
 }

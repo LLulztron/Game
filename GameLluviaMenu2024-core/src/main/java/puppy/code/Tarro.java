@@ -156,7 +156,7 @@ public class Tarro extends ElementoJuego implements Accionable {
 
         // Limitar el movimiento dentro de la pantalla
         if (bucket.x < 0) bucket.x = 0;
-        if (bucket.x > 600 - 64) bucket.x = 600 - 64;
+        if (bucket.x > 600 - 64) bucket.x = 500 - 64;
     }
 
     @Override

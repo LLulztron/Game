@@ -37,7 +37,7 @@ public class GameScreen implements Screen {
             new Texture(Gdx.files.internal("dropBad.png")),
             new Texture(Gdx.files.internal("healthDrp.png")),
             Gdx.audio.newSound(Gdx.files.internal("drop.wav")),
-            Gdx.audio.newSound(Gdx.files.internal("buffDrop.mp3")),  // Sonido de gota buff
+            Gdx.audio.newSound(Gdx.files.internal("HealthUp.mp3")),  // Sonido de gota buff
             Gdx.audio.newMusic(Gdx.files.internal("rain.mp3")),
             tarro
         );

@@ -151,21 +151,21 @@ public class Lluvia extends ElementoJuego implements Accionable {
 
     private void crearGotaDeLluvia() {
         Rectangle raindrop = new Rectangle();
-        raindrop.x = MathUtils.random(0, 800 - 64);
+        raindrop.x = MathUtils.random(0, 600 - 64);
         raindrop.y = posY;
         raindrop.width = 64;
         raindrop.height = 64;
         rainDropsPos.add(raindrop);
 
         // Calcular la probabilidad de que la gota sea mala en función del puntaje del jugador
-        int probabilidadMala = 5 + (tarro.getPuntos() / 100);  // Incrementa 1% de probabilidad de gota mala por cada 100 puntos
+        int probabilidadMala = 5 + (tarro.getPuntos() / 50);  // Incrementa 1% de probabilidad de gota mala por cada 50 puntos
         probabilidadMala = MathUtils.clamp(probabilidadMala, 5, 80); // Limita la probabilidad entre 5% y 80%
 
         int tipoGota;
         int randomValue = MathUtils.random(1, 100);
         if (randomValue <= probabilidadMala) {
             tipoGota = 1; // Gota mala
-        } else if (randomValue <= probabilidadMala + 10) {
+        } else if (randomValue <= probabilidadMala + 5) {
             tipoGota = 3; // Gota buff (un 10% adicional para gotas buff)
         } else {
             tipoGota = 2; // Gota buena

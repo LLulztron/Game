@@ -155,7 +155,6 @@ public class GameScreen implements Screen {
 
         backgroundImage = new Texture(Gdx.files.internal("Fondo.jpg"));
 
-        // Inicializar elementos y asignar referencias
         tarro = new Tarro(new Texture(Gdx.files.internal("bucket.png")), 
                           Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")));
         lluvia = new Lluvia(
@@ -163,15 +162,17 @@ public class GameScreen implements Screen {
             new Texture(Gdx.files.internal("dropBad.png")),
             new Texture(Gdx.files.internal("healthDrp.png")),
             Gdx.audio.newSound(Gdx.files.internal("drop.wav")),
-            Gdx.audio.newMusic(Gdx.files.internal("rain.mp3")), tarro
+            Gdx.audio.newMusic(Gdx.files.internal("rain.mp3")),
+            tarro
         );
 
         elementos = new ArrayList<>();
         elementos.add(tarro);
         elementos.add(lluvia);
 
+        // Configurar cámara (dimensiones)
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
+        camera.setToOrtho(false, 600, 500);  
     }
 
     @Override
@@ -185,9 +186,9 @@ public class GameScreen implements Screen {
         batch.draw(backgroundImage, 0, 0, camera.viewportWidth, camera.viewportHeight);
 
         // Mostrar vidas, puntuación, y high score
-        font.draw(batch, "Vidas: " + tarro.getVidas(), 10, 470);
-        font.draw(batch, "Puntuacion: " + tarro.getPuntos(), 10, 440);
-        font.draw(batch, "High Score: " + game.getHigherScore(), 650, 470);
+        font.draw(batch, "Vidas: " + tarro.getVidas(), 5, 490);
+        font.draw(batch, "Puntuacion: " + tarro.getPuntos(), 250, 490);
+        font.draw(batch, "High Score: " + game.getHigherScore(), 475, 490);
 
         // Actualizar y dibujar elementos
         for (Accionable elemento : elementos) {

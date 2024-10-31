@@ -31,9 +31,11 @@ public class DesignScreen implements Screen {
         
         // Inicializar los sprites de diseño y marco
         Texture frameTexture = new Texture(Gdx.files.internal("frameDesing.png"));
-        Texture designTexture = new Texture(Gdx.files.internal("design.png"));
+        Texture designTexture = new Texture(Gdx.files.internal("FondoTemas.jpg"));
         
+        /* testeo de textura diseño
         System.out.println(Gdx.files.internal("design.png").exists());
+        */
         
         frameSprite = new Sprite(frameTexture);
         designSprite = new Sprite(designTexture);

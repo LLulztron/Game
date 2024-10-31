@@ -1,4 +1,4 @@
-package puppy.code;
+/*package puppy.code;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -156,4 +156,127 @@ public class GameScreen implements Screen {
             rainMusic.play(); // Reanudar el sonido de lluvia
         }
     }
+}*/
+
+package puppy.code;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.ScreenUtils;
+
+public class GameScreen implements Screen {
+    final GameLluviaMenu game;
+    private OrthographicCamera camera;
+    private SpriteBatch batch;
+    private BitmapFont font;
+    private Tarro tarro;
+    private Lluvia lluvia;
+
+    private Texture backgroundImage; // Fondo de juego
+    private boolean isPaused; // Estado de pausa
+
+    public GameScreen(final GameLluviaMenu game) {
+        this.game = game;
+        this.batch = game.getBatch();
+        this.font = game.getFont();
+        
+        backgroundImage = new Texture(Gdx.files.internal("Fondo.jpg")); // Ajusta el nombre del archivo de imagen
+
+        tarro = new Tarro(new Texture(Gdx.files.internal("bucket.png")), Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")));
+        lluvia = new Lluvia(
+            new Texture(Gdx.files.internal("drop.png")),
+            new Texture(Gdx.files.internal("dropBad.png")),
+            new Texture(Gdx.files.internal("healthDrp.png")),
+            Gdx.audio.newSound(Gdx.files.internal("drop.wav")),
+            Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"))
+        );
+        
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 800, 480);
+        
+        // Inicialización de elementos de juego
+        tarro.crear();
+        lluvia.crear();
+    }
+
+    @Override
+    public void render(float delta) {
+        ScreenUtils.clear(0, 0, 0.1f, 1);
+        
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+
+        batch.draw(backgroundImage, 0, 0, camera.viewportWidth, camera.viewportHeight);
+
+        font.draw(batch, "Gotas totales: " + tarro.getPuntos(), 5, 475);
+        font.draw(batch, "Vidas : " + tarro.getVidas(), 670, 475);
+        font.draw(batch, "HighScore : " + game.getHigherScore(), camera.viewportWidth / 2 - 50, 475);
+        
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            isPaused = !isPaused;
+            if (isPaused) {
+                game.setScreen(new PausaScreen(game, this));
+            }
+        }
+
+        if (!isPaused) {
+            // Actualizar y dibujar elementos de juego usando métodos de ElementoJuego
+            tarro.actualizarMovimiento();
+            lluvia.actualizarMovimiento();
+
+            if (!lluvia.verificarColision(tarro)) {
+                if (game.getHigherScore() < tarro.getPuntos())
+                    game.setHigherScore(tarro.getPuntos());  
+                game.setScreen(new GameOverScreen(game));
+                dispose();
+            }
+            
+            tarro.dibujar(batch);
+            lluvia.dibujar(batch);
+        }
+        
+        batch.end();
+    }
+
+    @Override
+    public void resize(int width, int height) { }
+
+    @Override
+    public void show() {
+        lluvia.continuar();
+    }
+
+    @Override
+    public void hide() { }
+
+    @Override
+    public void pause() {
+        lluvia.pausar();
+        game.setScreen(new PausaScreen(game, this)); 
+    }
+
+    @Override
+    public void resume() { }
+
+    @Override
+    public void dispose() {
+        tarro.destruir();
+        lluvia.destruir();
+        backgroundImage.dispose();
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
+    }
+
+	public void resumeRainSound() {
+		// TODO Auto-generated method stub
+		
+	}
 }

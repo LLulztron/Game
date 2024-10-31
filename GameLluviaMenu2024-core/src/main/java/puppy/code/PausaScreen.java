@@ -36,7 +36,7 @@ public class PausaScreen implements Screen {
     @Override
     public void show() {
         // Detener el sonido al mostrar la pantalla de pausa
-        juego.stopRainSound(); // Llama al método que detiene el sonido
+        juego.resumeRainSound(); // Llama al método que detiene el sonido
     }
 
     @Override

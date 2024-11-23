@@ -1,157 +1,143 @@
 package puppy.code;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
+import puppy.code.gotitas.*;
+
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 
-public class Lluvia extends ElementoJuego implements Accionable {
-    private Array<Rectangle> rainDropsPos;
-    private Array<Integer> rainDropsType;
+public class Lluvia extends ElementoJuego {
+    private final Array<Rectangle> rainDropsPos;
+    private final Array<Integer> rainDropsType;  // Para almacenar el tipo de gota
+    private final Array<FabricaDeGotitas> fabricaDeGotitas;
     private long lastDropTime;
-    private Texture gotaBuena;
-    private Texture gotaMala;
-    private Texture gotaBuff;
-    private Sound dropSound;
-    private Sound buffDropSound;   // Sonido para la gota buff (healthDrop)
-    private Music rainMusic;
-    private float velocidad = 300;
-    private Tarro tarro;
+    private final Tarro tarro;
 
-    public Lluvia(Texture gotaBuena, Texture gotaMala, Texture gotaBuff, Sound dropSound, Sound buffDropSound, Music rainMusic, Tarro tarro) {
-        super(0, 480);
-        this.gotaBuena = gotaBuena;
-        this.gotaMala = gotaMala;
-        this.gotaBuff = gotaBuff;
-        this.dropSound = dropSound;
-        this.buffDropSound = buffDropSound;
-        this.rainMusic = rainMusic;
+    public Lluvia(Tarro tarro) {
+        super(0, Constants.SCREEN_HEIGHT);
         this.tarro = tarro;
+
         rainDropsPos = new Array<>();
         rainDropsType = new Array<>();
-        crearGotaDeLluvia();
-        rainMusic.setLooping(true);
-        rainMusic.play();
+        fabricaDeGotitas = new Array<>();
+
+        // Inicializamos las fábricas para las gotas (azul, roja, verde, dorada, nerf)
+        fabricaDeGotitas.add(new FabricaDeGotitaAzul()); // Gotita azul - Sumar puntos
+        fabricaDeGotitas.add(new FabricaDeGotitaDorada()); // Gotita dorada - Sumar más puntos
+        fabricaDeGotitas.add(new FabricaDeGotitaRoja()); // Gotita roja - Quitar vida
+        fabricaDeGotitas.add(new FabricaDeGotitaVerde()); // Gotita verde - Dar vida
+        fabricaDeGotitas.add(new FabricaDeGotitaNerff()); // Gotita Nerff - Ralentizar
+
+        crearGotaDeLluvia(); // Crear la primera gota
+        Assets.rainMusic.setLooping(true);
+        Assets.rainMusic.play();
     }
 
     private void crearGotaDeLluvia() {
         Rectangle raindrop = new Rectangle();
-        boolean posicionLibre;
-        int intentos = 0;
+        raindrop.x = MathUtils.random(0, Constants.SCREEN_WIDTH - 64); // Posición aleatoria en el eje X
+        raindrop.y = Constants.SCREEN_HEIGHT;
+        raindrop.width = 64;
+        raindrop.height = 64;
 
-        do {
-            raindrop.x = MathUtils.random(0, 500 - 64);
-            raindrop.y = posY;
-            raindrop.width = 64;
-            raindrop.height = 64;
+        // Probabilidad para seleccionar el tipo de gota (incluyendo la dorada con baja probabilidad)
+        int probabilidad = MathUtils.random(0, 100); // Genera un número aleatorio entre 0 y 100
+        FabricaDeGotitas fabricaSeleccionada;
 
-            posicionLibre = true;
-            for (Rectangle existente : rainDropsPos) {
-                if (raindrop.overlaps(existente)) {
-                    posicionLibre = false;
-                    break;
-                }
-            }
-            intentos++;
-        } while (!posicionLibre && intentos < 10);
-
-        if (posicionLibre) {
-            rainDropsPos.add(raindrop);
-
-            int probabilidadMala = 5 + (tarro.getPuntos() / 10);
-            probabilidadMala = MathUtils.clamp(probabilidadMala, 5, 80);
-
-            int tipoGota;
-            int randomValue = MathUtils.random(1, 100);
-            if (randomValue <= probabilidadMala) {
-                tipoGota = 1; // Gota mala
-            } else if (randomValue <= probabilidadMala + 5) {
-                tipoGota = 3; // Gota buff
-            } else {
-                tipoGota = 2; // Gota buena
-            }
-            rainDropsType.add(tipoGota);
-            lastDropTime = TimeUtils.nanoTime();
+        if (probabilidad < 5) { // 5% para gotita dorada
+            fabricaSeleccionada = fabricaDeGotitas.get(1); // Gotita dorada (puntos extra)
+        } else if (probabilidad < 33) { // 28% para gotita azul (puntos)
+            fabricaSeleccionada = fabricaDeGotitas.get(0); // Gotita azul
+        } else if (probabilidad < 66) { // 33% para gotita roja (daño)
+            fabricaSeleccionada = fabricaDeGotitas.get(2); // Gotita roja
+        } else if (probabilidad < 90) { // 24% para gotita verde (curación)
+            fabricaSeleccionada = fabricaDeGotitas.get(3); // Gotita verde
+        } else { // 10% para gotita Nerff (ralentizar)
+            fabricaSeleccionada = fabricaDeGotitas.get(4); // Gotita Nerff (ralentizar)
         }
+
+        // Crear el efecto usando la fábrica seleccionada
+        Efecto efecto = fabricaSeleccionada.crearEfecto();
+        rainDropsPos.add(raindrop); // Añadir la gota a la lista
+        rainDropsType.add(fabricaDeGotitas.indexOf(fabricaSeleccionada, true)); // Guardar el tipo de gota
+        lastDropTime = TimeUtils.nanoTime(); // Actualizar el tiempo de creación
     }
 
     @Override
-    public void actualizar() {
-        float velocidadIncremento = tarro.getPuntos() / 1000.0f * 500;
-        velocidad = 300 + velocidadIncremento;
-
-        if (TimeUtils.nanoTime() - lastDropTime > 450000000) {
-            int gotasPorCrear = MathUtils.random(1, 3);
-            for (int i = 0; i < gotasPorCrear; i++) {
-                crearGotaDeLluvia();
-            }
-            lastDropTime = TimeUtils.nanoTime();
+    public void actualizarMovimiento() {
+        if (TimeUtils.nanoTime() - lastDropTime > 1000000000) {
+            crearGotaDeLluvia(); // Crear una nueva gota cada segundo
         }
 
-        for (Rectangle raindrop : rainDropsPos) {
-            raindrop.y -= velocidad * Gdx.graphics.getDeltaTime();
+        // Actualizar la posición de las gotas
+        for (Rectangle drop : rainDropsPos) {
+            drop.y -= 300 * Gdx.graphics.getDeltaTime(); // Velocidad de caída de las gotas
+        }
+
+        // Comprobar colisión de gotas con el tarro y aplicar los efectos correspondientes
+        for (int i = 0; i < rainDropsPos.size; i++) {
+            Rectangle raindrop = rainDropsPos.get(i);
+            if (tarro.colisionaConGota(raindrop)) {
+                // Obtener el tipo de gota y su respectiva fábrica
+                int tipo = rainDropsType.get(i);
+                FabricaDeGotitas fabricaSeleccionada = fabricaDeGotitas.get(tipo);
+
+                // Crear y aplicar el efecto correspondiente
+                Efecto efecto = fabricaSeleccionada.crearEfecto();
+                efecto.aplicarEfecto(tarro); // Aplicar el efecto al tarro
+
+                // Eliminar la gota de la pantalla después de la colisión
+                rainDropsPos.removeIndex(i);
+                rainDropsType.removeIndex(i);
+                i--; // Ajustar el índice después de eliminar la gota
+            }
         }
     }
 
     @Override
     public void dibujar(SpriteBatch batch) {
+        // Dibujar las gotas en la pantalla
         for (int i = 0; i < rainDropsPos.size; i++) {
-            Rectangle raindrop = rainDropsPos.get(i);
-            Texture gota = rainDropsType.get(i) == 1 ? gotaMala : (rainDropsType.get(i) == 2 ? gotaBuena : gotaBuff);
-            batch.draw(gota, raindrop.x, raindrop.y);
-        }
-    }
-
-    public boolean verificarColision(Tarro tarro) {
-        for (int i = 0; i < rainDropsPos.size; i++) {
-            Rectangle raindrop = rainDropsPos.get(i);
-            if (raindrop.overlaps(tarro.getArea())) {
-                if (rainDropsType.get(i) == 1) {  // Gota mala
-                    tarro.dañar();
-                    if (tarro.getVidas() <= 0) return false;
-                } else if (rainDropsType.get(i) == 2) {  // Gota buena
-                    tarro.sumarPuntos(10);
-                    dropSound.play();  // Reproduce el sonido de gota buena
-                } else {  // Gota buff (healthDrop)
-                    tarro.aumentarVida();
-                    buffDropSound.play();  // Reproduce el sonido de gota buff una vez
-                }
-                // Elimina la gota después de la colisión para evitar múltiples reproducciones
-                rainDropsPos.removeIndex(i);
-                rainDropsType.removeIndex(i);
-                i--;  // Ajusta el índice después de eliminar un elemento
+            Texture textura;
+            // Asignamos la textura de acuerdo al tipo de gota
+            switch (rainDropsType.get(i)) {
+                case 0:
+                    textura = Assets.dropTexture;  // Textura para gotita azul
+                    break;
+                case 1:
+                    textura = Assets.dropGPointTexture;  // Textura para gotita dorada (más puntos)
+                    break;
+                case 2:
+                    textura = Assets.dropBadTexture;  // Textura para gotita roja
+                    break;
+                case 3:
+                    textura = Assets.healthDropTexture;  // Textura para gotita verde
+                    break;
+                case 4:
+                    textura = Assets.dropIceTexture;  // Textura para gotita Nerff (ralentización)
+                    break;
+                default:
+                    textura = Assets.dropTexture;  // Textura por defecto
+                    break;
             }
+            Rectangle raindrop = rainDropsPos.get(i);
+            batch.draw(textura, raindrop.x, raindrop.y);  // Dibujar la gota
         }
-        return true;
     }
 
     @Override
     public void destruir() {
-        gotaBuena.dispose();
-        gotaMala.dispose();
-        gotaBuff.dispose();
-        dropSound.dispose();
-        buffDropSound.dispose(); // Liberar el sonido de gota buff
-        rainMusic.dispose();
+        // Liberar los recursos de la música de la lluvia cuando se destruye la clase
+  
     }
 
-    public void pausar() {
-        if (rainMusic.isPlaying()) {
-            rainMusic.pause();
-        }
-    }
-
-    public void continuar() {
-        if (!rainMusic.isPlaying()) {
-            rainMusic.play();
-        }
-    }
-
-    @Override
-    public void actualizarMovimiento() { }
+	@Override
+	public void actualizar() {
+		// TODO Auto-generated method stub
+		
+	}
 }

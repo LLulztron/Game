@@ -5,92 +5,79 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameScreen implements Screen {
-    final GameLluviaMenu game;
-    private OrthographicCamera camera;
-    private SpriteBatch batch;
-    private BitmapFont font;
-    private List<Accionable> elementos;
-    private Texture backgroundImage;
-    private boolean isPaused;
+    private final GameLluviaMenu game;
+    private final OrthographicCamera camera;
+    private final SpriteBatch batch;
+    private final Texture backgroundImage;
+    private final List<ElementoJuego> elementosJuego;
+   // private Tarro tarro;
 
-    private Tarro tarro;
-    private Lluvia lluvia;
-
-    public GameScreen(final GameLluviaMenu game) {
-        this.game = game;
+    public GameScreen() {
+        this.game = GameLluviaMenu.getInstance();
         this.batch = game.getBatch();
-        this.font = game.getFont();
-
-        backgroundImage = new Texture(Gdx.files.internal("Fondo.jpg"));
-
-        tarro = new Tarro(new Texture(Gdx.files.internal("bucket.png")), 
-                          Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")));
-        lluvia = new Lluvia(
-            new Texture(Gdx.files.internal("drop.png")),
-            new Texture(Gdx.files.internal("dropBad.png")),
-            new Texture(Gdx.files.internal("healthDrp.png")),
-            Gdx.audio.newSound(Gdx.files.internal("drop.wav")),
-            Gdx.audio.newSound(Gdx.files.internal("HealthUp.mp3")),  // Sonido de gota buff
-            Gdx.audio.newMusic(Gdx.files.internal("rain.mp3")),
-            tarro
-        );
-
-        elementos = new ArrayList<>();
-        elementos.add(tarro);
-        elementos.add(lluvia);
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 600, 500);  
+        camera.setToOrtho(false, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+
+        backgroundImage = new Texture(Gdx.files.internal("newFondo.png"));
+
+        elementosJuego = new ArrayList<>();
+        Tarro tarro = new Tarro(Assets.bucketTexture, Assets.hurtSound, Assets.healthUpSound);
+        elementosJuego.add(tarro);
+        elementosJuego.add(new Lluvia(tarro));
     }
 
     @Override
     public void render(float delta) {
+        // Limpiar la pantalla con un color de fondo
         ScreenUtils.clear(0, 0, 0.1f, 1);
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
+        // Iniciar el batch para dibujar los elementos
         batch.begin();
-        batch.draw(backgroundImage, 0, 0, camera.viewportWidth, camera.viewportHeight);
+        batch.draw(backgroundImage, 0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
-        font.draw(batch, "Vidas: " + tarro.getVidas(), 5, 490);
-        font.draw(batch, "Puntuacion: " + tarro.getPuntos(), 250, 490);
-        font.draw(batch, "High Score: " + game.getHigherScore(), 475, 490);
-
-        for (Accionable elemento : elementos) {
-            elemento.actualizar();
-            elemento.dibujar(batch);
+        // Recorrer los elementos del juego y actualizarlos/dibujarlos
+        for (ElementoJuego elemento : elementosJuego) {
+            elemento.actualizarYDibujar(batch);
         }
 
-        if (!lluvia.verificarColision(tarro)) {
-            game.setHigherScore(Math.max(game.getHigherScore(), tarro.getPuntos()));
-            game.setScreen(new GameOverScreen(game));
+        // Obtener el tarro como el primer elemento de la lista
+        Tarro tarro = (Tarro) elementosJuego.get(0);
+
+        // Actualizar la estrategia de movimiento del tarro según las teclas presionadas
+        if ((Gdx.input.isKeyPressed(Input.Keys.LEFT )) || (Gdx.input.isKeyPressed(Input.Keys.A ))) {
+            tarro.setMovimiento(new MovimientoIzquierda());
+        } else if ((Gdx.input.isKeyPressed(Input.Keys.RIGHT )) || (Gdx.input.isKeyPressed(Input.Keys.D ))) {
+            tarro.setMovimiento(new MovimientoDerecha());
+        } else {
+            tarro.setMovimiento(null); // Sin movimiento si no hay teclas presionadas
+        }
+
+        // Mostrar los puntos y las vidas en pantalla
+        game.getFont().draw(batch, "Puntos: " + tarro.getPuntos() + " | Vidas: " + tarro.getVidas(), 10, Constants.SCREEN_HEIGHT - 20);
+        batch.end();
+
+        // Verificar si las vidas se agotaron, cambiar a la pantalla de Game Over si es necesario
+        if (tarro.getVidas() <= 0) {
+            game.setScreen(new GameOverScreen());
             dispose();
         }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            isPaused = !isPaused;
-            if (isPaused) {
-                game.setScreen(new PausaScreen(game, this));
-                pause();
-            }
-        }
-
-        batch.end();
     }
 
     @Override
-    public void show() {
-        for (Accionable elemento : elementos) {
-            if (elemento instanceof Lluvia) {
-                ((Lluvia) elemento).continuar();
-            }
+    public void dispose() {
+        backgroundImage.dispose();
+        for (ElementoJuego elemento : elementosJuego) {
+            elemento.destruir();
         }
     }
 
@@ -100,47 +87,14 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void pause() {
-        for (Accionable elemento : elementos) {
-            if (elemento instanceof Lluvia) {
-                ((Lluvia) elemento).pausar();
-            }
-        }
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-        for (Accionable elemento : elementos) {
-            if (elemento instanceof Lluvia) {
-                ((Lluvia) elemento).continuar();
-            }
-        }
-    }
+    public void resume() {}
 
     @Override
-    public void hide() {
-        for (Accionable elemento : elementos) {
-            if (elemento instanceof Lluvia) {
-                ((Lluvia) elemento).pausar();
-            }
-        }
-    }
+    public void hide() {}
 
     @Override
-    public void dispose() {
-        backgroundImage.dispose();
-        for (Accionable elemento : elementos) {
-            elemento.destruir();
-        }
-    }
-
-    public void setPaused(boolean b) {}
-
-    public void resumeRainSound() {
-        for (Accionable elemento : elementos) {
-            if (elemento instanceof Lluvia) {
-                ((Lluvia) elemento).continuar();
-            }
-        }
-    }
+    public void show() {}
 }

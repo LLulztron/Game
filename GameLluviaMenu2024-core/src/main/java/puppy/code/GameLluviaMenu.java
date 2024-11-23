@@ -1,49 +1,53 @@
 package puppy.code;
 
-import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class GameLluviaMenu extends Game {
+    private static GameLluviaMenu instance;
 
-	private SpriteBatch batch;
-	private BitmapFont font;
-	private int higherScore;
+    private SpriteBatch batch;
+    private BitmapFont font;
 
-	public void create() {
-		batch = new SpriteBatch();
-		font = new BitmapFont(); // use libGDX's default Arial font
-		this.setScreen(new MainMenuScreen(this));
-	}
+    private GameLluviaMenu() { }
 
-	public void render() {
-		super.render(); // important!
-	}
+    public static synchronized GameLluviaMenu getInstance() {
+        if (instance == null) {
+            instance = new GameLluviaMenu();
+        }
+        return instance;
+    }
 
-	public void dispose() {
-		batch.dispose();
-		font.dispose();
-	}
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+        font = new BitmapFont(); // Fuente predeterminada para el juego
 
-	public SpriteBatch getBatch() {
-		return batch;
-	}
+        // Cargar recursos
+        Assets.load();
 
-	public BitmapFont getFont() {
-		return font;
-	}
+        // Configurar la pantalla inicial
+        setScreen(new MainMenuScreen());
+    }
 
-	public int getHigherScore() {
-		return higherScore;
-	}
+    @Override
+    public void render() {
+        super.render();
+    }
 
-	public void setHigherScore(int higherScore) {
-		this.higherScore = higherScore;
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+        Assets.dispose();
+        if (font != null) font.dispose();
+    }
 
-	public static ApplicationListener getInstance() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public SpriteBatch getBatch() {
+        return batch;
+    }
+
+    public BitmapFont getFont() {
+        return font;
+    }
 }

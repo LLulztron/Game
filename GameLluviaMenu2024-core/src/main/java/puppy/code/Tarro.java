@@ -1,29 +1,43 @@
 package puppy.code;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.MathUtils;
 
-public class Tarro extends ElementoJuego implements Accionable {
-    private Rectangle bucket;
-    private Texture bucketImage;
-    private Sound sonidoHerido;
+public class Tarro extends ElementoJuego {
+    private final Rectangle bucket;
+    private final Texture bucketImage;
+    private final Sound sonidoHerido;
+    private final Sound sonidoCurar;
+    private final int velocidadNormal = 400;  // Velocidad normal
+    private int velocidadActual = velocidadNormal;  // Velocidad actual (puede ser modificada por efectos)
     private int vidas = 3;
     private int puntos = 0;
-    private int velocidad = 400;
-    private boolean herido = false;
-    private int tiempoHeridoMax = 50;
-    private int tiempoHerido;
 
-    public Tarro(Texture tex, Sound ss) {
-        super(800 / 2 - 64 / 2, 20);
-        bucketImage = tex;
-        sonidoHerido = ss;
-        bucket = new Rectangle(posX, posY, 64, 64);
+    private Movimiento movimiento; // Estrategia de movimiento
+
+    // Variables para la ralentización
+    private float tiempoRalentizado = 0;  // Tiempo durante el cual el tarro está ralentizado
+
+    public Tarro(Texture bucketImage, Sound sonidoHerido, Sound sonidoCurar) {
+        super(Constants.SCREEN_WIDTH / 2 - 32, 20);
+        this.bucketImage = bucketImage;
+        this.sonidoHerido = sonidoHerido;
+        this.sonidoCurar = sonidoCurar;
+        this.bucket = new Rectangle(posX, posY, 64, 64);
+        this.movimiento = null; // Por defecto, no hay movimiento
+    }
+
+    /**
+     * Establece la estrategia de movimiento para el tarro.
+     * 
+     * @param movimiento La estrategia de movimiento.
+     */
+    public void setMovimiento(Movimiento movimiento) {
+        this.movimiento = movimiento;
     }
 
     public int getVidas() {
@@ -34,71 +48,60 @@ public class Tarro extends ElementoJuego implements Accionable {
         return puntos;
     }
 
-    public Rectangle getArea() {
-        return bucket;
-    }
-
-    public void sumarPuntos(int pp) {
-        puntos += pp;
-    }
-
-    public void dañar() {
-        vidas--;
-        herido = true;
-        tiempoHerido = tiempoHeridoMax;
-        sonidoHerido.play();
-    }
-
-    public void aumentarVida() {
-        vidas++;
-    }
-
     @Override
-    public void actualizar() {
-        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bucket.x -= velocidad * Gdx.graphics.getDeltaTime();
+    public void actualizarMovimiento() {
+        // Si el tarro está ralentizado, actualiza la velocidad
+        if (movimiento != null) {
+            movimiento.mover(bucket, velocidadActual, Gdx.graphics.getDeltaTime());
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bucket.x += velocidad * Gdx.graphics.getDeltaTime();
-        }
-
-        // Limitar el movimiento dentro de la pantalla
-        if (bucket.x < 0) bucket.x = 0;
-        if (bucket.x > 600 - 64) bucket.x = 500 - 64;
     }
 
     @Override
     public void dibujar(SpriteBatch batch) {
-        if (!herido) {
-            batch.draw(bucketImage, bucket.x, bucket.y);
-        } else {
-            batch.draw(bucketImage, bucket.x, bucket.y + MathUtils.random(-5, 5));
-            tiempoHerido--;
-            if (tiempoHerido <= 0) herido = false;
-        }
+        batch.draw(bucketImage, bucket.x, bucket.y);
     }
 
     @Override
     public void destruir() {
-        bucketImage.dispose();
-        sonidoHerido.dispose();
+        // Liberar recursos asociados al tarro si es necesario
     }
 
-	@Override
-	public void continuar() {
-		// TODO Auto-generated method stub
-		
-	}
+    public void sumarPuntos() {
+        puntos += 10;
+    }
 
-	@Override
-	public void pausar() {
-		// TODO Auto-generated method stub
-		
-	}
+    public void GoldenPoint() {
+        puntos += 100;
+    }
 
-	@Override
-	public void actualizarMovimiento() {
-		// TODO Auto-generated method stub
-		
-	}
+    public void sumarVida() {
+        vidas++;
+        sonidoCurar.play();
+    }
+
+    public void quitarVida() {
+        vidas--;
+        sonidoHerido.play();
+    }
+
+    public boolean colisionaConGota(Rectangle raindrop) {
+        return bucket.overlaps(raindrop);
+    }
+
+    @Override
+    public void actualizar() {
+        // Si el efecto de ralentización ha terminado, restauramos la velocidad normal
+        if (tiempoRalentizado > 0) {
+            tiempoRalentizado -= Gdx.graphics.getDeltaTime();
+            if (tiempoRalentizado <= 0) {
+                velocidadActual = velocidadNormal;  // Restablecer la velocidad normal
+            }
+        }
+    }
+
+    // Método para aplicar el efecto de ralentización
+    public void aplicarRalentizacion(float duracion) {
+        tiempoRalentizado = duracion;  // Establece la duración del efecto de ralentización
+        velocidadActual = (int) (velocidadNormal * 0.5f);  // Reduce la velocidad al 50%
+    }
 }

@@ -1,130 +1,113 @@
 package puppy.code;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector3;
 
 public class MainMenuScreen implements Screen {
-
-    final GameLluviaMenu game;
-    private SpriteBatch batch;		
+    private final GameLluviaMenu game;
+    private SpriteBatch batch;
     private OrthographicCamera camera;
-    private Music introMusic;
-    private Texture buttonTexture;
-    private Sprite buttonSprite;
-    private Texture designButtonTexture;
-    private Sprite designButtonSprite; // Botón para el apartado de diseños
-    private Texture logoTexture;
-    private Sprite logoSprite;
-    private Texture cloudTexture;
-    private Sprite cloudSprite;
-
-    public MainMenuScreen(final GameLluviaMenu game) {
-        this.game = game;
+    
+    // Botones
+    private Sprite newGameButton;
+    private Sprite tutorialButton;
+    private Sprite themesButton;
+    private Sprite backgroundSprite;
+    
+    public MainMenuScreen() {
+        this.game = GameLluviaMenu.getInstance();
         this.batch = game.getBatch();
+
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
+        camera.setToOrtho(false, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
-        // Cargar la música
-        introMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
-        introMusic.setLooping(true);
+        // Cargar las texturas para los botones y fondo
+        Texture newGameTexture = new Texture(Gdx.files.internal("button.png"));
+        Texture tutorialTexture = new Texture(Gdx.files.internal("temas.jpg"));
+        Texture themesTexture = new Texture(Gdx.files.internal("temas.jpg"));
+        Texture backgroundTexture = new Texture(Gdx.files.internal("clouds.jpg"));
 
-        // Cargar la textura del botón principal
-        buttonTexture = new Texture(Gdx.files.internal("button.png"));
-        buttonSprite = new Sprite(buttonTexture);
-        buttonSprite.setPosition(225, 170);
-
-        // Cargar la textura del botón "Diseños Disponibles"
-        designButtonTexture = new Texture(Gdx.files.internal("temas.jpg"));
-        designButtonSprite = new Sprite(designButtonTexture);
-        designButtonSprite.setPosition(0, 0); // Posición del nuevo botón
-
-        // Cargar la textura del logo
-        logoTexture = new Texture(Gdx.files.internal("logo.png"));
-        logoSprite = new Sprite(logoTexture);
-        logoSprite.setPosition(200, 240);
-
-        // Cargar la textura de nubes
-        cloudTexture = new Texture(Gdx.files.internal("clouds.jpg"));
-        cloudSprite = new Sprite(cloudTexture);
-        cloudSprite.setSize(800, 480);
-        cloudSprite.setPosition(0, 0);
+        // Crear los sprites para los botones
+        newGameButton = new Sprite(newGameTexture);
+        tutorialButton = new Sprite(tutorialTexture);
+        themesButton = new Sprite(themesTexture);
+        backgroundSprite = new Sprite(backgroundTexture);
+        
+        // Posiciones de los botones
+        newGameButton.setPosition(Constants.SCREEN_WIDTH / 2 - newGameButton.getWidth() / 2, 250); // Botón "Nuevo Juego"
+        tutorialButton.setPosition(Constants.SCREEN_WIDTH / 2 - tutorialButton.getWidth() / 2, 180); // Botón "Tutorial"
+        themesButton.setPosition(Constants.SCREEN_WIDTH / 2 - themesButton.getWidth() / 2, 110); // Botón "Temas"
     }
 
     @Override
     public void show() {
-        introMusic.play();
+        System.out.println("Pantalla del menú principal mostrada.");
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0.2f, 1);
-
+        // Limpiar la pantalla con un color
+        ScreenUtils.clear(0, 0, 0.2f, 1);  
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-
-        // Dibuja el fondo de nubes
-        cloudSprite.draw(batch);
-
-        // Dibuja el logo
-        logoSprite.draw(batch);
-
-        // Dibuja el botón de inicio
-        buttonSprite.draw(batch);
-
-        // Dibuja el botón "Diseños Disponibles"
-        designButtonSprite.draw(batch);
-
+        batch.draw(backgroundSprite, 0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT); // Fondo
+        newGameButton.draw(batch); // Botón "Nuevo Juego"
+        tutorialButton.draw(batch); // Botón "Tutorial"
+        themesButton.draw(batch); // Botón "Temas"
         batch.end();
 
-        // Detecta si se toca dentro del botón de inicio
+        // Detectar toque para interactuar con los botones
         if (Gdx.input.isTouched()) {
-            // Obtiene las coordenadas de toque y las convierte a coordenadas del juego
             Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos); // Convierte a coordenadas del mundo de la cámara
-
-            // Verifica si el toque está dentro del botón de inicio
-            if (buttonSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)) {
-                game.setScreen(new GameScreen(game));
+            camera.unproject(touchPos); // Convertir coordenadas táctiles a coordenadas de pantalla
+            
+            if (newGameButton.getBoundingRectangle().contains(touchPos.x, touchPos.y)) {
+                game.setScreen(new GameScreen());
+                dispose();
+            } else if (tutorialButton.getBoundingRectangle().contains(touchPos.x, touchPos.y)) {
+                game.setScreen(new TutorialScreen());
+                dispose();
+            } else if (themesButton.getBoundingRectangle().contains(touchPos.x, touchPos.y)) {
+                game.setScreen(new LoadingScreen());
                 dispose();
             }
+        }
 
-            // Verifica si el toque está dentro del botón "Diseños Disponibles"
-            if (designButtonSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)) {
-                game.setScreen(new DesignScreen(game)); // Cambia a la nueva pantalla
-                dispose();
-            }
+        // Detectar la tecla "ESCAPE" o "SPACE" para pausar el juego
+        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
+            game.setScreen(new PausaScreen());  // Cambiar a pantalla de pausa
         }
     }
 
     @Override
+    public void resize(int width, int height) {
+        camera.setToOrtho(false, width, height);  // Ajustar la cámara para la nueva resolución
+    }
+
+    @Override
+    public void pause() {}
+
+    @Override
+    public void resume() {}
+
+    @Override
     public void hide() {
-        introMusic.stop();
+        System.out.println("Pantalla del menú principal oculta.");
     }
 
     @Override
     public void dispose() {
-        introMusic.dispose();
-        buttonTexture.dispose();
-        designButtonTexture.dispose(); // Liberar la textura del nuevo botón
-        logoTexture.dispose();
-        cloudTexture.dispose();
+        newGameButton.getTexture().dispose();
+        tutorialButton.getTexture().dispose();
+        themesButton.getTexture().dispose();
+        backgroundSprite.getTexture().dispose();
     }
-
-    @Override
-    public void resize(int width, int height) { }
-
-    @Override
-    public void pause() { }
-
-    @Override
-    public void resume() { }
 }

@@ -1,5 +1,6 @@
 package puppy.code;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -39,5 +40,10 @@ public class GameLluviaMenu extends Game {
 
 	public void setHigherScore(int higherScore) {
 		this.higherScore = higherScore;
+	}
+
+	public static ApplicationListener getInstance() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

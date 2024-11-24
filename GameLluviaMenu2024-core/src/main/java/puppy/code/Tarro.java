@@ -1,7 +1,6 @@
 package puppy.code;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -91,17 +90,17 @@ public class Tarro extends ElementoJuego {
     @Override
     public void actualizar() {
         // Si el efecto de ralentización ha terminado, restauramos la velocidad normal
-        if (tiempoRalentizado > 0) {
-            tiempoRalentizado -= Gdx.graphics.getDeltaTime();
-            if (tiempoRalentizado <= 0) {
-                velocidadActual = velocidadNormal;  // Restablecer la velocidad normal
-            }
-        }
+    	if (tiempoRalentizado > 0) {
+    	    tiempoRalentizado -= Gdx.graphics.getDeltaTime();
+    	    if (tiempoRalentizado <= 0) {
+    	        velocidadActual = velocidadNormal;  // Restablecer la velocidad normal
+    	    }
+    	}
     }
 
     // Método para aplicar el efecto de ralentización
     public void aplicarRalentizacion(float duracion) {
-        tiempoRalentizado = duracion;  // Establece la duración del efecto de ralentización
+        tiempoRalentizado = duracion;  // Establece la duración del efecto
         velocidadActual = (int) (velocidadNormal * 0.5f);  // Reduce la velocidad al 50%
     }
 }

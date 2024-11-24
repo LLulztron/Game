@@ -1,10 +1,8 @@
 package puppy.code.gotitas;
 
-import puppy.code.Tarro;
-
 public class FabricaDeGotitaNerff implements FabricaDeGotitas {
 
-    private static final float DURACION_NERF = 5f;  // Duración del efecto de ralentización (en segundos)
+    private static final float DURACION_NERF = 2f;  // Duración del efecto de ralentización (en segundos)
 
     @Override
     public Efecto crearEfecto() {

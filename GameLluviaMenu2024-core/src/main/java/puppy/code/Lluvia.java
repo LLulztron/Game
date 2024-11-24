@@ -39,61 +39,87 @@ public class Lluvia extends ElementoJuego {
 
     private void crearGotaDeLluvia() {
         Rectangle raindrop = new Rectangle();
-        raindrop.x = MathUtils.random(0, Constants.SCREEN_WIDTH - 64); // Posición aleatoria en el eje X
+        raindrop.x = MathUtils.random(0, Constants.SCREEN_WIDTH - 64);
         raindrop.y = Constants.SCREEN_HEIGHT;
         raindrop.width = 64;
         raindrop.height = 64;
 
-        // Probabilidad para seleccionar el tipo de gota (incluyendo la dorada con baja probabilidad)
-        int probabilidad = MathUtils.random(0, 100); // Genera un número aleatorio entre 0 y 100
+        // Obtener el puntaje actual del tarro
+        int puntos = tarro.getPuntos();
+        int probabilidad = MathUtils.random(0, 100);
         FabricaDeGotitas fabricaSeleccionada;
 
-        if (probabilidad < 5) { // 5% para gotita dorada
-            fabricaSeleccionada = fabricaDeGotitas.get(1); // Gotita dorada (puntos extra)
-        } else if (probabilidad < 33) { // 28% para gotita azul (puntos)
-            fabricaSeleccionada = fabricaDeGotitas.get(0); // Gotita azul
-        } else if (probabilidad < 66) { // 33% para gotita roja (daño)
-            fabricaSeleccionada = fabricaDeGotitas.get(2); // Gotita roja
-        } else if (probabilidad < 90) { // 24% para gotita verde (curación)
-            fabricaSeleccionada = fabricaDeGotitas.get(3); // Gotita verde
-        } else { // 10% para gotita Nerff (ralentizar)
-            fabricaSeleccionada = fabricaDeGotitas.get(4); // Gotita Nerff (ralentizar)
+        // Ajustar las probabilidades dinámicamente según el puntaje
+        if (puntos >= 250) {
+            // A partir de 250 puntos
+            if (probabilidad < 5) { // 5% para gotita dorada
+                fabricaSeleccionada = fabricaDeGotitas.get(1);
+            } else if (probabilidad < 40) { // 35% para gotita azul
+                fabricaSeleccionada = fabricaDeGotitas.get(0);
+            } else if (probabilidad < 75) { // 35% para gotita roja
+                fabricaSeleccionada = fabricaDeGotitas.get(2);
+            } else if (probabilidad < 92) { // 17% para gotita nerff
+                fabricaSeleccionada = fabricaDeGotitas.get(4);
+            } else { // 8% para gotita vida
+                fabricaSeleccionada = fabricaDeGotitas.get(3);
+            }
+        } else {
+            // Probabilidades normales
+            if (probabilidad < 3) { // 3% para gotita dorada
+                fabricaSeleccionada = fabricaDeGotitas.get(1);
+            } else if (probabilidad < 30) { // 27% para gotita azul
+                fabricaSeleccionada = fabricaDeGotitas.get(0);
+            } else if (probabilidad < 70) { // 40% para gotita roja
+                fabricaSeleccionada = fabricaDeGotitas.get(2);
+            } else if (probabilidad < 90) { // 20% para gotita verde
+                fabricaSeleccionada = fabricaDeGotitas.get(3);
+            } else { // 10% para gotita Nerff
+                fabricaSeleccionada = fabricaDeGotitas.get(4);
+            }
         }
 
-        // Crear el efecto usando la fábrica seleccionada
-        Efecto efecto = fabricaSeleccionada.crearEfecto();
-        rainDropsPos.add(raindrop); // Añadir la gota a la lista
-        rainDropsType.add(fabricaDeGotitas.indexOf(fabricaSeleccionada, true)); // Guardar el tipo de gota
-        lastDropTime = TimeUtils.nanoTime(); // Actualizar el tiempo de creación
+        rainDropsPos.add(raindrop);
+        rainDropsType.add(fabricaDeGotitas.indexOf(fabricaSeleccionada, true));
+        lastDropTime = TimeUtils.nanoTime();
+    }
+
+
+    private float calcularVelocidadCaida() {
+        int puntos = tarro.getPuntos();
+        float velocidadBase = 300;
+        float velocidadMaxima = velocidadBase * 2f;
+        float incremento = (velocidadMaxima - velocidadBase) / 500; // Incrementa más lentamente con el puntaje
+        return Math.min(velocidadBase + puntos * incremento, velocidadMaxima);
     }
 
     @Override
     public void actualizarMovimiento() {
         if (TimeUtils.nanoTime() - lastDropTime > 1000000000) {
-            crearGotaDeLluvia(); // Crear una nueva gota cada segundo
+            crearGotaDeLluvia();
         }
 
-        // Actualizar la posición de las gotas
         for (Rectangle drop : rainDropsPos) {
-            drop.y -= 300 * Gdx.graphics.getDeltaTime(); // Velocidad de caída de las gotas
+            drop.y -= calcularVelocidadCaida() * Gdx.graphics.getDeltaTime(); // Velocidad dinámica
         }
 
-        // Comprobar colisión de gotas con el tarro y aplicar los efectos correspondientes
+        // Manejar colisiones
         for (int i = 0; i < rainDropsPos.size; i++) {
             Rectangle raindrop = rainDropsPos.get(i);
             if (tarro.colisionaConGota(raindrop)) {
-                // Obtener el tipo de gota y su respectiva fábrica
                 int tipo = rainDropsType.get(i);
                 FabricaDeGotitas fabricaSeleccionada = fabricaDeGotitas.get(tipo);
 
-                // Crear y aplicar el efecto correspondiente
                 Efecto efecto = fabricaSeleccionada.crearEfecto();
-                efecto.aplicarEfecto(tarro); // Aplicar el efecto al tarro
+                efecto.aplicarEfecto(tarro);
 
-                // Eliminar la gota de la pantalla después de la colisión
+                // Reproducir sonido para gotas azules
+                if (tipo == 0) {
+                    Assets.dropSound.play();
+                }
+
                 rainDropsPos.removeIndex(i);
                 rainDropsType.removeIndex(i);
-                i--; // Ajustar el índice después de eliminar la gota
+                i--;
             }
         }
     }

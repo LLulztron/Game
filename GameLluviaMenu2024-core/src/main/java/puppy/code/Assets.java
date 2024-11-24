@@ -52,7 +52,7 @@ public class Assets {
             loadingTexture = new Texture(Gdx.files.internal("loading.jpg")); 
 
             // Cargar sonidos
-            menuMusic = Gdx.audio.newMusic(Gdx.files.internal(RAIN_MUSIC));
+            menuMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
             rainMusic = Gdx.audio.newMusic(Gdx.files.internal(RAIN_MUSIC));
             gameOverSound = Gdx.audio.newSound(Gdx.files.internal("gameover_sound.mp3"));
             dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));

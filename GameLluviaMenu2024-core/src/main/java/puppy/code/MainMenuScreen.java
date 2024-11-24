@@ -46,11 +46,6 @@ public class MainMenuScreen implements Screen {
     }
 
     @Override
-    public void show() {
-        System.out.println("Pantalla del menú principal mostrada.");
-    }
-
-    @Override
     public void render(float delta) {
         // Limpiar la pantalla con un color
         ScreenUtils.clear(0, 0, 0.2f, 1);  
@@ -99,15 +94,32 @@ public class MainMenuScreen implements Screen {
     public void resume() {}
 
     @Override
+    public void show() {
+        System.out.println("Pantalla del menú principal mostrada.");
+        if (Assets.menuMusic != null) {
+            Assets.menuMusic.play(); // Reproducir música
+        }
+    }
+
+    @Override
     public void hide() {
         System.out.println("Pantalla del menú principal oculta.");
+        if (Assets.menuMusic != null) {
+            Assets.menuMusic.stop(); // Detener música
+        }
     }
 
     @Override
     public void dispose() {
+        // Detener música al salir de la pantalla, si es necesario
+        if (Assets.menuMusic != null) {
+            Assets.menuMusic.stop();
+        }
+        // Liberar otros recursos
         newGameButton.getTexture().dispose();
         tutorialButton.getTexture().dispose();
         themesButton.getTexture().dispose();
         backgroundSprite.getTexture().dispose();
     }
+
 }

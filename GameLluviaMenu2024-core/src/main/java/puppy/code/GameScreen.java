@@ -45,13 +45,14 @@ public class GameScreen implements Screen {
         batch.begin();
         batch.draw(backgroundImage, 0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
-        // Recorrer los elementos del juego y actualizarlos/dibujarlos
+     // Recorrer los elementos del juego y actualizarlos/dibujarlos
         for (ElementoJuego elemento : elementosJuego) {
             elemento.actualizarYDibujar(batch);
         }
 
-        // Obtener el tarro como el primer elemento de la lista
-        Tarro tarro = (Tarro) elementosJuego.get(0);
+        // Llamar a actualizar el estado del tarro
+        Tarro tarro = (Tarro) elementosJuego.get(0); // Suponiendo que el tarro es el primer elemento
+        tarro.actualizar(); // Actualizar lógica adicional como ralentización
 
         // Actualizar la estrategia de movimiento del tarro según las teclas presionadas
         if ((Gdx.input.isKeyPressed(Input.Keys.LEFT )) || (Gdx.input.isKeyPressed(Input.Keys.A ))) {
